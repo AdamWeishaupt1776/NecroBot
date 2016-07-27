@@ -69,6 +69,7 @@ namespace PoGo.NecroBot.Logic.Tasks
                     ctx.LogicSettings.WalkingSpeedInKilometerPerHour,
                     () =>
                     {
+                        if (ctx.SoftbanWarningCount >= 3) return false;
                         CatchNearbyPokemonsTask.Execute(ctx, machine);
                         return true;
                     }).Wait();
@@ -82,6 +83,32 @@ namespace PoGo.NecroBot.Logic.Tasks
                         Gems = fortSearch.GemsAwarded,
                         Items = StringUtils.GetSummedFriendlyNameOfItemAwardList(fortSearch.ItemsAwarded)
                     });
+                }
+                else
+                {
+                    ctx.SoftbanWarningCount++;
+                    machine.Fire(new WarnEvent
+                    {
+                        Message = $"possible softban detected... {ctx.SoftbanWarningCount}"
+                    });
+
+                    if (ctx.SoftbanWarningCount >= 3)
+                    {
+                        for (int i = 0; i < 40; i++)
+                        {
+                            machine.Fire(new WarnEvent
+                            {
+                                Message = $"mitigating softban... {i + 1}/40"
+                            });
+                            var fortSearchAgain = ctx.Client.Fort.SearchFort(pokeStop.Id, pokeStop.Latitude, pokeStop.Longitude).Result;
+                            if (fortSearch.ExperienceAwarded > 0)
+                            {
+                                ctx.SoftbanWarningCount = 0;
+                                continue;
+                            }
+                            Thread.Sleep(50);
+                        }
+                    }
                 }
 
                 Thread.Sleep(1000);

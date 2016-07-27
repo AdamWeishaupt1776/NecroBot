@@ -30,12 +30,15 @@ namespace PoGo.NecroBot.Logic.State
 
         public LogicClient LogicClient { get; private set; }
 
+        public int SoftbanWarningCount { get; set; }
+
         public void Reset(ISettings settings, ILogicSettings logicSettings)
         {
             Client = new Client(Settings);
             LogicClient = new LogicClient(LogicSettings);
             Inventory = new Inventory(Client, LogicClient);
             Navigation = new Navigation(Client);
+            SoftbanWarningCount = 0;
         }
     }
 }

@@ -67,6 +67,14 @@ namespace PoGo.NecroBot.Logic.Tasks
                     evt.Exp = totalExp;
                     evt.Stardust = profile.PlayerData.Currencies.ToArray()[1].Amount;
                 }
+                else if (caughtPokemonResponse.Status == CatchPokemonResponse.Types.CatchStatus.CatchFlee)
+                {
+                    ctx.SoftbanWarningCount++;
+                    machine.Fire(new WarnEvent
+                    {
+                        Message = $"possible softban detected... {ctx.SoftbanWarningCount}"
+                    });
+                }
 
 
                 if (encounter?.CaptureProbability?.CaptureProbability_ != null)
